@@ -55,5 +55,6 @@ serve.py          zero-build dev server (adds no-cache headers)
 Note: opening `index.html` directly via `file://` works in most browsers because the
 backend sends permissive CORS headers, but serving over HTTP (as above) is more reliable.
 
-**Docker:** `docker compose up -d --build` from the repository root also serves this UI
-(nginx) at http://localhost:3001 alongside the containerized backend and PostgreSQL.
+For deployment, host this folder on any static host (Vercel, Netlify, GitHub Pages).
+If the backend lives on another domain (for example Railway), uncomment the
+`JAVAURL_CONFIG_OVERRIDE` block in `index.html` and point it at that API URL.

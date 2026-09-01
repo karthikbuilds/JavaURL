@@ -16,12 +16,40 @@ counts clicks and broadcasts live analytics.
 # zero-setup (in-memory H2):
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
-# PostgreSQL (start just the database from the repository root):
-#   docker compose up -d postgres
+# PostgreSQL (set env vars before running):
+#   POSTGRES_URL=jdbc:postgresql://<host>:5432/javaurl
+#   POSTGRES_USER=<user>
+#   POSTGRES_PASSWORD=<password>
 ./mvnw spring-boot:run
 ```
 
-Environment overrides: `POSTGRES_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `APP_BASE_URL`.
+Environment overrides: `POSTGRES_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `APP_BASE_URL`, `SERVER_PORT`.
+
+## Deploy to Railway (no Docker)
+
+1. Create a new Railway project from this GitHub repo.
+2. Set the service **Root Directory** to `backend`.
+3. Build command:
+
+```bash
+./mvnw package -DskipTests
+```
+
+4. Start command:
+
+```bash
+java -jar target/JavaURL-0.0.1-SNAPSHOT.jar
+```
+
+5. Add variables:
+
+```text
+SPRING_PROFILES_ACTIVE=dev
+SERVER_PORT=${PORT}
+APP_BASE_URL=https://YOUR-RAILWAY-DOMAIN.up.railway.app
+```
+
+Use `SPRING_PROFILES_ACTIVE=dev` for a zero-setup H2 demo (data resets when the service restarts). For persistence, remove that variable and provide `POSTGRES_URL`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` instead.
 
 ## API Reference
 
