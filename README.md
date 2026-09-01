@@ -30,7 +30,7 @@ cd backend
 
 ```bash
 cd frontend
-python3 -m http.server 3001        # or: npx serve -l 3001 .
+python3 serve.py 3001               # or: npx serve -l 3001 .
 ```
 
 Open **http://localhost:3001**. The UI auto-detects the API at `http://localhost:8081`

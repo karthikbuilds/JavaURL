@@ -16,7 +16,9 @@ The backend must be running (default `http://localhost:8081`) — see [`../backe
 Any static file server works. From this folder:
 
 ```bash
-python3 -m http.server 3001        # 3000 is often taken by other dev servers
+python3 serve.py 3001              # zero-build, adds no-cache headers
+# or
+python3 -m http.server 3001        # plain static server (may cache stale files)
 # or
 npx serve -l 3001 .
 ```
@@ -47,6 +49,7 @@ js/config.js      API/WebSocket base URL resolution
 js/api.js         REST client with normalised ApiError
 js/ws.js          STOMP client (/ws/websocket transport, topic /topic/clicks/{code})
 js/app.js         UI controller (form, table, pagination, stats panel)
+serve.py          zero-build dev server (adds no-cache headers)
 ```
 
 Note: opening `index.html` directly via `file://` works in most browsers because the
