@@ -47,6 +47,36 @@ docker compose up -d --build       # first build downloads dependencies, be pati
 Same URLs as above (`http://localhost:3001` / `http://localhost:8081`); data persists in a
 named volume. Stop everything with `docker compose down` (add `-v` to wipe the database).
 
+## ☁️ Deploy (free, demo)
+
+The backend is a Spring Boot API + database; the frontend is plain static files. Two small pieces, two ways to host:
+
+- **Frontend (static)** → **Vercel / Netlify / GitHub Pages** (free, zero config)
+- **Backend (API + DB)** → **Render / Railway / Fly** (has free tiers)
+
+> In-memory **H2** (the `dev` profile we use locally) works on Render with **no database** — put `SPRING_PROFILES_ACTIVE=dev`. For persistence, attach a Postgres and Set `POSTGRES_URL` / `POSTGRES_USER` / `POSTGRES_PASSWORD`.
+
+### Fastest: Render-only (skip Vercel)
+1. Import `render.yaml` into **Render** (New → Blueprint) — it creates the backend Web Service (H2, no DB).
+2. Set `APP_BASE_URL` to the live URL Render assigns (e.g. `https://javaurl-backend.onrender.com`) — otherwise all short links point at `localhost`.
+3. Serve the frontend as a **Render Static Site** (root `frontend`, no build, publish `.`) **or** push `frontend/` to **Vercel**.
+4. In `frontend/index.html`, uncomment the override block and point it at that backend URL:
+
+```html
+<script>
+  window.JAVAURL_CONFIG_OVERRIDE = {
+    apiBase: 'https://YOUR-BACKEND.onrender.com',
+    wsBase:  'wss://YOUR-BACKEND.onrender.com'
+  };
+</script>
+```
+
+### Wait — you said H2 in-memory?
+Correct: for local running we use `SPRING_PROFILES_ACTIVE=dev` → H2 in-memory (data resets on restart, perfect for a demo). On Render, setting the same profile gives you a live API with **no database setup**. For real persistence, flip to Postgres (see `.env.example`.
+
+### Full env reference
+See **[`.env.example`](.env.example)** — it lists every variable (ports, DB choice, `APP_BASE_URL`, tuning).
+
 ## What you get
 
 - Shorten URLs with generated Base62 codes or custom aliases, optional expiry

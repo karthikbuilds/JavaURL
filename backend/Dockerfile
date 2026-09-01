@@ -18,5 +18,6 @@ USER app
 
 COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 8080
+# The backend listens on 8081 (see application.properties).
+EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

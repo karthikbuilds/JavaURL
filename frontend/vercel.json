@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "echo \"no build step — JavaURL frontend is pure static\"",
+  "outputDirectory": ".",
+  "devCommand": "python3 serve.py 3001"
+}
