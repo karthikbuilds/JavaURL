@@ -1,29 +1,20 @@
 # Render Blueprint — deploys the JavaURL backend on Render.
 #
-# Simplest path: H2 in-memory (no database) — matches local dev via the dev profile.
-# Exactly how we run it locally: SPRING_PROFILES_ACTIVE=dev.
-#
-# After deploy:
-#   1. Set APP_BASE_URL to your live URL Render assigns (e.g. https://javaurl-backend.onrender.com).
-#   2. Point the frontend override at that URL (see frontend/index.html).
-#
-# For PERSISTENT data later: Render Blueprints do NOT support a "postgres" service type.
-# Instead create a Postgres DB from the Dashboard (New -> Postgres) and add POSTGRES_* env
-# vars to this web service, and remove the SPRING_PROFILES_ACTIVE entry.
+# Built via Docker (runtime: docker) using the multi-stage backend/Dockerfile,
+# which compiles the Spring Boot jar with Maven and runs it on a slim Temurin JRE.
+# Uses the H2 in-memory dev profile (SPRING_PROFILES_ACTIVE=dev) — no database needed.
 
 services:
   - type: web
     name: javaurl-backend
-    runtime: java
+    runtime: docker
     rootDir: backend
-    buildCommand: ./mvnw -B package -DskipTests
-    startCommand: java -jar target/JavaURL-0.0.1-SNAPSHOT.jar
     plan: free
+    healthCheckPath: /actuator/health
     envVars:
-      - key: SERVER_PORT
-        value: 8081
       - key: SPRING_PROFILES_ACTIVE
         value: dev
+      - key: SERVER_PORT
+        value: 8081
       - key: APP_BASE_URL
         sync: false
-    healthCheckPath: /actuator/health
