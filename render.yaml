@@ -1,11 +1,15 @@
 # Render Blueprint — deploys the JavaURL backend on Render.
 #
-# SIMPLEST OPTION (no database): run with the in-memory H2 dev profile.
-#   - Set SPRING_PROFILES_ACTIVE=dev (below already does this by default).
-#   - Flip "usePostgres" to true if you'd rather persist data in a managed Postgres.
+# Simplest path: H2 in-memory (no database) — matches local dev via the dev profile.
+# Exactly how we run it locally: SPRING_PROFILES_ACTIVE=dev.
 #
-# After deploy, set the FRONTEND override to the URL Render assigns,
-# e.g. # APP_BASE_URL: https://javaurl-backend.onrender.com
+# After deploy:
+#   1. Set APP_BASE_URL to your live URL Render assigns (e.g. https://javaurl-backend.onrender.com).
+#   2. Point the frontend override at that URL (see frontend/index.html).
+#
+# For PERSISTENT data later: Render Blueprints do NOT support a "postgres" service type.
+# Instead create a Postgres DB from the Dashboard (New -> Postgres) and add POSTGRES_* env
+# vars to this web service, and remove the SPRING_PROFILES_ACTIVE entry.
 
 services:
   - type: web
@@ -19,15 +23,7 @@ services:
       - key: SERVER_PORT
         value: 8081
       - key: SPRING_PROFILES_ACTIVE
-        value: dev        # H2 in-memory — zero-setup demo; set to empty to use Postgres below
+        value: dev
       - key: APP_BASE_URL
-        sync: false        # set manually to your live https://... URL after deploy
+        sync: false
     healthCheckPath: /actuator/health
-
-  - type: postgres
-    name: javaurl-postgres
-    databaseName: javaurl
-    user: javaurl
-    plan: free
-    # Attach the backend DATABASE_URL to the web service to use Postgres instead of H2:
-    #   - envGroup: javaurl-postgres  (then drop SPRING_PROFILES_ACTIVE and set POSTGRES_URL accordingly)
