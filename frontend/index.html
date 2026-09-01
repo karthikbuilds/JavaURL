@@ -112,6 +112,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+    // Local run: the backend is on port 8081 (8080 is occupied by another app).
+    window.JAVAURL_CONFIG_OVERRIDE = { apiBase: 'http://localhost:8081', wsBase: 'ws://localhost:8081' };
+</script>
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/ws.js"></script>
