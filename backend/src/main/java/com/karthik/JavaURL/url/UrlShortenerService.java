@@ -166,6 +166,7 @@ public class UrlShortenerService {
      * Scheduled maintenance: deactivates newly expired links and hard-deletes expired
      * links older than the configured retention window.
      */
+    @Transactional
     @Scheduled(fixedDelayString = "${app.cleanup.interval-ms:3600000}", initialDelay = 60_000)
     public void purgeExpired() {
         if (!properties.cleanup().enabled()) {
