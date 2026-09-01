@@ -50,7 +50,7 @@ class UrlApiIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.shortUrl").value(startsWith("http://localhost:8080/")))
+                .andExpect(jsonPath("$.shortUrl").value(startsWith("http://localhost:8081/")))
                 .andExpect(jsonPath("$.clickCount").value(0))
                 .andReturn();
     }

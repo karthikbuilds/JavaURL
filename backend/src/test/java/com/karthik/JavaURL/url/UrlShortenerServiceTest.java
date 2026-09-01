@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 class UrlShortenerServiceTest {
 
     private static final AppProperties PROPERTIES =
-            new AppProperties("http://localhost:8080/", 7, 302, null, null);
+            new AppProperties("http://localhost:8081/", 7, 302, null, null);
 
     @Mock
     private ShortUrlRepository repository;
@@ -55,7 +55,7 @@ class UrlShortenerServiceTest {
         ShortUrlResponse response = service.create(request("https://example.com/page", "my-link"));
 
         assertThat(response.shortCode()).isEqualTo("my-link");
-        assertThat(response.shortUrl()).isEqualTo("http://localhost:8080/my-link");
+        assertThat(response.shortUrl()).isEqualTo("http://localhost:8081/my-link");
         verify(analyticsPublisher, never()).publish(anyString(), anyLong());
     }
 

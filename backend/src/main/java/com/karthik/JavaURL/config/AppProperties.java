@@ -15,7 +15,7 @@ public record AppProperties(String baseUrl, int codeLength, int redirectStatus, 
 
     public AppProperties {
         if (baseUrl == null || baseUrl.isBlank()) {
-            baseUrl = "http://localhost:8080";
+            baseUrl = "http://localhost:8081";
         }
         baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         if (codeLength < 3 || codeLength > 32) {

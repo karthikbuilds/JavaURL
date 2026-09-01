@@ -3,7 +3,7 @@
 #   Stop:   docker compose down        (add -v to also wipe database data)
 #
 # UI:      http://localhost:3001   (3001 chosen to avoid the common :3000 dev-server clash)
-# API:     http://localhost:8080
+# API:     http://localhost:8081
 services:
   postgres:
     image: postgres:17-alpine
@@ -31,12 +31,12 @@ services:
       POSTGRES_USER: javaurl
       POSTGRES_PASSWORD: javaurl
     ports:
-      - "8080:8080"
+      - "8081:8081"
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO", "-", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "-qO", "-", "http://localhost:8081/actuator/health"]
       interval: 15s
       timeout: 3s
       retries: 10

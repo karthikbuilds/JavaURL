@@ -25,7 +25,7 @@ Environment overrides: `POSTGRES_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `AP
 
 ## API Reference
 
-Base URL: `http://localhost:8080`
+Base URL: `http://localhost:8081`
 
 | Method   | Path                       | Description                                    |
 |----------|----------------------------|------------------------------------------------|
@@ -41,7 +41,7 @@ Base URL: `http://localhost:8080`
 ### Create a short URL
 
 ```bash
-curl -i -X POST http://localhost:8080/api/v1/urls \
+curl -i -X POST http://localhost:8081/api/v1/urls \
   -H 'Content-Type: application/json' \
   -d '{"longUrl": "https://spring.io/projects/spring-boot", "customAlias": "boot", "expiresInDays": 7}'
 ```
@@ -50,7 +50,7 @@ curl -i -X POST http://localhost:8080/api/v1/urls \
 {
   "id": 1,
   "shortCode": "boot",
-  "shortUrl": "http://localhost:8080/boot",
+  "shortUrl": "http://localhost:8081/boot",
   "longUrl": "https://spring.io/projects/spring-boot",
   "createdAt": "2026-08-26T00:00:00Z",
   "expiresAt": "2026-09-02T00:00:00Z",
@@ -83,7 +83,7 @@ Connect to `/ws` and subscribe to `/topic/clicks/{code}`. Every redirect publish
 
 | Property                    | Default                 | Purpose                            |
 |-----------------------------|-------------------------|------------------------------------|
-| `app.base-url`              | `http://localhost:8080` | Base URL used in returned links    |
+| `app.base-url`              | `http://localhost:8081` | Base URL used in returned links    |
 | `app.code-length`           | `7`                     | Random code length (3–32)          |
 | `app.redirect-status`       | `302`                   | Redirect status (301/302/307/308)  |
 | `app.cleanup.enabled`       | `true`                  | Scheduled expiry maintenance       |

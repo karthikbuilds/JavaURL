@@ -1,8 +1,8 @@
 /*
  * Runtime configuration.
  * The API/WebSocket base URLs are auto-detected:
- *  - UI served by the backend itself (port 8080)  -> same-origin requests
- *  - UI served elsewhere (dev server on :3000, file://, other hosts) -> http://<host>:8080
+ *  - UI served by the backend itself (port 8081)  -> same-origin requests
+ *  - UI served elsewhere (dev server on :3000, file://, other hosts) -> http://<host>:8081
  * Override by defining window.JAVAURL_CONFIG_OVERRIDE = { apiBase: "...", wsBase: "..." } before these scripts load.
  */
 (function () {
@@ -23,10 +23,10 @@
     }
 
     var port = loc.port;
-    var onBackendPort = port === '8080';
+    var onBackendPort = port === '8081';
     var host = loc.hostname || 'localhost'; // file:// has an empty hostname
     var httpProto = loc.protocol === 'file:' ? 'http:' : loc.protocol; // never build "file://" API URLs
-    var httpBase = onBackendPort ? '' : httpProto + '//' + host + ':8080';
+    var httpBase = onBackendPort ? '' : httpProto + '//' + host + ':8081';
 
     window.JavaURLConfig = {
         apiBase: httpBase,

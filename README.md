@@ -11,7 +11,7 @@ JavaURL/
 
 | App      | Location    | Port | Docs                                        |
 |----------|-------------|------|---------------------------------------------|
-| Backend  | `backend/`  | 8080 | [`backend/README.md`](backend/README.md)    |
+| Backend  | `backend/`  | 8081 | [`backend/README.md`](backend/README.md)    |
 | Frontend | `frontend/` | 3001 | [`frontend/README.md`](frontend/README.md)  |
 
 ## Quickstart (two terminals)
@@ -33,7 +33,7 @@ cd frontend
 python3 -m http.server 3001        # or: npx serve -l 3001 .
 ```
 
-Open **http://localhost:3001**. The UI auto-detects the API at `http://localhost:8080`
+Open **http://localhost:3001**. The UI auto-detects the API at `http://localhost:8081`
 (CORS is enabled on the backend); override targets via `window.JAVAURL_CONFIG_OVERRIDE`.
 
 ### Alternative — whole stack in Docker
@@ -44,7 +44,7 @@ With Docker Desktop running, one command starts PostgreSQL + API + UI:
 docker compose up -d --build       # first build downloads dependencies, be patient
 ```
 
-Same URLs as above (`http://localhost:3001` / `http://localhost:8080`); data persists in a
+Same URLs as above (`http://localhost:3001` / `http://localhost:8081`); data persists in a
 named volume. Stop everything with `docker compose down` (add `-v` to wipe the database).
 
 ## What you get

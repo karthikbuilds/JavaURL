@@ -11,7 +11,7 @@ A dependency-free static web app (HTML + CSS + vanilla JS, no build step) for th
 
 ## Run it
 
-The backend must be running (default `http://localhost:8080`) — see [`../backend/README.md`](../backend/README.md).
+The backend must be running (default `http://localhost:8081`) — see [`../backend/README.md`](../backend/README.md).
 
 Any static file server works. From this folder:
 
@@ -29,8 +29,8 @@ Then open **http://localhost:3001**.
 
 | UI served from            | Requests go to                    |
 |---------------------------|-----------------------------------|
-| port `8080` (same origin)  | same origin                       |
-| anywhere else             | `<protocol>://<hostname>:8080`    |
+| port `8081` (same origin)  | same origin                       |
+| anywhere else             | `<protocol>://<hostname>:8081`    |
 
 To point elsewhere explicitly, define this before the scripts load:
 
