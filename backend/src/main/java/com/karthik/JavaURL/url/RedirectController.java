@@ -1,7 +1,9 @@
 package com.karthik.JavaURL.url;
 
+import com.karthik.JavaURL.analytics.ClickRecordStore;
 import com.karthik.JavaURL.config.AppProperties;
 import com.karthik.JavaURL.url.dto.ShortUrlResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ public class RedirectController {
 
     private final UrlShortenerService service;
     private final AppProperties properties;
+    private final ClickRecordStore clickRecordStore;
 
     /** Simple service descriptor shown at the root path. */
     @GetMapping("/")
@@ -34,10 +37,21 @@ public class RedirectController {
 
     /** Redirects visitors of a short link to the destination URL, counting the click. */
     @GetMapping("/{code:[A-Za-z0-9_-]{3,64}}")
-    public ResponseEntity<Void> redirect(@PathVariable String code) {
+    public ResponseEntity<Void> redirect(@PathVariable String code, HttpServletRequest request) {
         ShortUrlResponse target = service.resolveAndCount(code);
+        // Fire-and-forget: captures referrer/agent/origin without slowing the redirect.
+        clickRecordStore.record(code, request.getHeader("Referer"),
+                request.getHeader("User-Agent"), clientIp(request));
         return ResponseEntity.status(properties.redirectStatus())
                 .location(URI.create(target.longUrl()))
                 .build();
+    }
+
+    private String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

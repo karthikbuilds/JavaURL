@@ -98,6 +98,30 @@
         $('test-btn').onclick = function () {
             window.open(created.shortUrl, '_blank', 'noopener');
         };
+
+        $('qr-btn').onclick = function () { toggleQr(created.shortUrl); };
+    }
+
+    /* ---------- QR code ---------- */
+
+    function buildQrDataUrl(text) {
+        if (typeof qrcode !== 'function') throw new Error('QR library unavailable');
+        var qr = qrcode(0, 'M');
+        qr.addData(text);
+        qr.make();
+        return qr.createDataURL(4, 4);
+    }
+
+    function toggleQr(text) {
+        var box = $('qr-box');
+        if (!box.hidden) { box.hidden = true; return; }
+        var img = $('qr-img');
+        try {
+            img.src = buildQrDataUrl(text);
+            box.hidden = false;
+        } catch (err) {
+            window.prompt('Could not generate a QR image — copy the link manually:', text);
+        }
     }
 
     /* ---------- list ---------- */
@@ -240,6 +264,17 @@
         $('next-page').addEventListener('click', function () { loadPage(Math.min(state.totalPages - 1, state.page + 1)); });
         $('refresh-btn').addEventListener('click', function () { loadPage(state.page); });
         $('close-stats').addEventListener('click', closeStats);
+        $('qr-close').addEventListener('click', function () { $('qr-box').hidden = true; });
+        $('qr-download').addEventListener('click', function () {
+            var img = $('qr-img');
+            if (!img.src || img.src === location.href) return;
+            var a = document.createElement('a');
+            a.href = img.src;
+            a.download = 'javauurl-qr.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
         $('api-base-hint').textContent =
             (window.JavaURLConfig.apiBase || window.location.origin) + '/api/v1/urls';
         loadPage(0);

@@ -50,15 +50,18 @@ named volume. Stop everything with `docker compose down` (add `-v` to wipe the d
 ## What you get
 
 - Shorten URLs with generated Base62 codes or custom aliases, optional expiry
-- One-click copy, redirect testing, deactivation (`410 Gone` afterwards)
+- One-click copy, **QR code download**, redirect testing, deactivation (`410 Gone` afterwards)
 - Paginated link overview with status chips (Active / Expired / Deleted)
 - **Live click counters** pushed over STOMP WebSocket (`/topic/clicks/{code}`),
   with automatic polling fallback when WebSocket is unavailable
+- Per-click analytics detail (referrer, user agent, origin IP) via `/api/v1/urls/{code}/clicks`
+- Resilient performance: atomic click counters, Caffeine redirect cache, per-client rate limiting
+- Health/metrics via Actuator, continuous integration via GitHub Actions
 
 ## Tests & builds
 
 ```bash
-cd backend && ./mvnw test      # 23 tests incl. full HTTP integration suite (H2)
+cd backend && ./mvnw test      # 27 tests incl. full HTTP integration suite (H2)
 ```
 
 The frontend has no build step — it runs as plain static files.

@@ -4,8 +4,10 @@ Spring Boot **4.1.1** / Java 21 service that shortens URLs, redirects visitors,
 counts clicks and broadcasts live analytics.
 
 - Persistence: Spring Data JPA / Hibernate — PostgreSQL (default) or H2 (`dev` profile)
-- Realtime: STOMP over WebSocket (`/ws`, SockJS fallback)
-- Security: stateless, all endpoints public, CORS `*`
+- Realtime: STOMP over WebSocket (`/ws`, SockJS fallback) — simple or external broker
+- Security: stateless, all endpoints public, CORS `*`, per-client rate limiting on the write API
+- Performance: in-process Caffeine cache for redirects, atomic DB click counters, async click-detail persistence
+- Ops: Actuator health/metrics endpoint
 - Tests: JUnit 5 + Mockito + MockMvc against H2 — no external services needed
 
 ## Run
@@ -25,14 +27,16 @@ Environment overrides: `POSTGRES_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `AP
 
 Base URL: `http://localhost:8080`
 
-| Method   | Path                    | Description                                    |
-|----------|-------------------------|------------------------------------------------|
-| `POST`   | `/api/v1/urls`          | Create a short URL → `201`                     |
-| `GET`    | `/api/v1/urls`          | List all short URLs, paged                     |
-| `GET`    | `/api/v1/urls/{code}`   | Metadata + click stats                         |
-| `DELETE` | `/api/v1/urls/{code}`   | Deactivate (idempotent) → `204`                |
-| `GET`    | `/{code}`               | Redirect to destination (`302`; `410` if gone) |
-| `GET`    | `/ws`                   | STOMP endpoint (SockJS fallback)               |
+| Method   | Path                       | Description                                    |
+|----------|----------------------------|------------------------------------------------|
+| `POST`   | `/api/v1/urls`             | Create a short URL → `201`                     |
+| `GET`    | `/api/v1/urls`             | List all short URLs, paged                     |
+| `GET`    | `/api/v1/urls/{code}`      | Metadata + click stats                         |
+| `GET`    | `/api/v1/urls/{code}/clicks`| Recent click details (referrer, UA, IP)        |
+| `DELETE` | `/api/v1/urls/{code}`      | Deactivate (idempotent) → `204`                |
+| `GET`    | `/{code}`                  | Redirect to destination (`302`; `410` if gone) |
+| `GET`    | `/ws`                      | STOMP endpoint (SockJS fallback)               |
+| `GET`    | `/actuator/health`         | Health endpoint                               |
 
 ### Create a short URL
 
@@ -85,6 +89,11 @@ Connect to `/ws` and subscribe to `/topic/clicks/{code}`. Every redirect publish
 | `app.cleanup.enabled`       | `true`                  | Scheduled expiry maintenance       |
 | `app.cleanup.retention-days`| `30`                    | Hard-delete window after expiry    |
 | `app.cleanup.interval-ms`   | `3600000`               | Cleanup interval                   |
+| `app.ratelimit.enabled`     | `true`                  | Per-client limit on POST/DELETE    |
+| `app.ratelimit.capacity`    | `100`                   | Initial token bucket size          |
+| `app.ratelimit.refill-per-second`| `50`              | Token refill rate                  |
+| `app.broker.type`           | `simple`                | `simple` or `external` STOMP relay |
+| `app.broker.host`/`port`    | `localhost`/`61613`     | External broker host/port          |
 
 ## Test & package
 

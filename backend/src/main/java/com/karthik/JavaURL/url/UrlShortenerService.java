@@ -1,12 +1,16 @@
 package com.karthik.JavaURL.url;
 
 import com.karthik.JavaURL.analytics.ClickAnalyticsPublisher;
+import com.karthik.JavaURL.analytics.ClickDetailResponse;
+import com.karthik.JavaURL.analytics.ClickRecord;
+import com.karthik.JavaURL.analytics.ClickRecordRepository;
 import com.karthik.JavaURL.config.AppProperties;
 import com.karthik.JavaURL.util.Base62Codec;
 import com.karthik.JavaURL.url.dto.CreateShortUrlRequest;
 import com.karthik.JavaURL.url.dto.ShortUrlResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +27,6 @@ import java.util.Locale;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class UrlShortenerService {
 
@@ -35,6 +38,7 @@ public class UrlShortenerService {
     private final ShortUrlRepository repository;
     private final AppProperties properties;
     private final ClickAnalyticsPublisher analyticsPublisher;
+    private final ClickRecordRepository clickRecordRepository;
     private final SecureRandom random = new SecureRandom();
 
     /**
@@ -70,9 +74,26 @@ public class UrlShortenerService {
         return toResponse(entity);
     }
 
+    public UrlShortenerService(ShortUrlRepository repository, AppProperties properties,
+                               ClickAnalyticsPublisher analyticsPublisher,
+                               ClickRecordRepository clickRecordRepository) {
+        this.repository = repository;
+        this.properties = properties;
+        this.analyticsPublisher = analyticsPublisher;
+        this.clickRecordRepository = clickRecordRepository;
+    }
+
+    /** In-process cache of entity metadata (destination, expiry, active flag) for hot redirects. */
+    private final Cache<String, ShortUrl> redirectCache = Caffeine.newBuilder()
+            .maximumSize(100_000)
+            .expireAfterWrite(Duration.ofMinutes(10))
+            .recordStats()
+            .build();
+
     /**
      * Resolves a short code for redirection: validates availability/expiry,
-     * increments the click counter and broadcasts the new count over WebSocket.
+     * atomically increments the click counter and broadcasts the new count over WebSocket.
+     * The increment runs as a single SQL statement so concurrent redirects never lose an update.
      */
     @Transactional
     public ShortUrlResponse resolveAndCount(String code) {
@@ -85,9 +106,16 @@ public class UrlShortenerService {
             log.debug("Short link '{}' has expired; marking inactive", code);
             throw new UrlNotAvailableException(code, "it expired");
         }
-        entity.setClickCount(entity.getClickCount() + 1);
-        entity = repository.save(entity);
-        analyticsPublisher.publish(entity);
+
+        int updated = repository.incrementClickCount(code); // atomic DB-side increment
+        if (updated == 0) {
+            // Lost a race with a concurrent deactivation; reload the truth.
+            evictFromCache(code);
+            throw new UrlNotAvailableException(code, "it was deactivated");
+        }
+        long newCount = entity.getClickCount() + 1;
+        entity.setClickCount(newCount);
+        analyticsPublisher.publish(code, newCount);
         return toResponse(entity);
     }
 
@@ -95,6 +123,23 @@ public class UrlShortenerService {
     @Transactional(readOnly = true)
     public ShortUrlResponse stats(String code) {
         return toResponse(findEntity(code));
+    }
+
+    /** Returns the most recent click details for a short code (for the analytics view). */
+    @Transactional(readOnly = true)
+    public java.util.List<ClickDetailResponse> recentClicks(String code, int limit) {
+        findEntity(code); // ensure the code exists (404 if it does not)
+        return clickRecordRepository.findTop50ByShortCodeOrderByClickedAtDesc(code)
+                .stream()
+                .limit(Math.max(1, Math.min(limit, 50)))
+                .map(this::toClickDetail)
+                .toList();
+    }
+
+    private ClickDetailResponse toClickDetail(ClickRecord record) {
+        return new ClickDetailResponse(
+                record.getShortCode(), record.getClickedAt(),
+                record.getReferer(), record.getUserAgent(), record.getIp());
     }
 
     /** Lists all short URLs, newest first. */
@@ -113,6 +158,7 @@ public class UrlShortenerService {
         }
         entity.setActive(false);
         repository.save(entity);
+        evictFromCache(code);
         log.info("Deactivated short link '{}'", code);
     }
 
@@ -130,13 +176,24 @@ public class UrlShortenerService {
         int deleted = repository.deleteByExpiresAtBefore(
                 now.minus(Duration.ofDays(properties.cleanup().retentionDays())));
         if (deactivated > 0 || deleted > 0) {
+            redirectCache.invalidateAll(); // drop any now-stale cached entries
             log.info("Cleanup: deactivated {} expired links, deleted {} beyond {}-day retention",
                     deactivated, deleted, properties.cleanup().retentionDays());
         }
     }
 
     private ShortUrl findEntity(String code) {
-        return repository.findByShortCode(code).orElseThrow(() -> new UrlNotFoundException(code));
+        ShortUrl cached = redirectCache.getIfPresent(code);
+        if (cached != null) {
+            return cached;
+        }
+        ShortUrl entity = repository.findByShortCode(code).orElseThrow(() -> new UrlNotFoundException(code));
+        redirectCache.put(code, entity);
+        return entity;
+    }
+
+    private void evictFromCache(String code) {
+        redirectCache.invalidate(code);
     }
 
     private String generateUniqueCode() {

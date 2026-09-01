@@ -133,4 +133,26 @@ class UrlApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2));
     }
+
+    @Test
+    void recentClicksEndpointReturnsRecordedClicks() throws Exception {
+        String code = extractCode(createShortUrl("{\"longUrl\":\"https://example.com/tracked\",\"customAlias\":\"tracked-1\"}"));
+
+        mockMvc.perform(get("/" + code))
+                .andExpect(status().isFound());
+
+        // Click-detail persistence is async; poll briefly until it shows up.
+        long deadline = System.currentTimeMillis() + 3000;
+        int size = 0;
+        while (System.currentTimeMillis() < deadline) {
+            MvcResult result = mockMvc.perform(get("/api/v1/urls/" + code + "/clicks"))
+                    .andExpect(status().isOk())
+                    .andReturn();
+            String body = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+            size = (int) body.chars().filter(c -> c == '{').count();
+            if (size >= 1) break;
+            Thread.sleep(200);
+        }
+        assertThat(size).isGreaterThanOrEqualTo(1);
+    }
 }

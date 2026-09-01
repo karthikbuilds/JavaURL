@@ -1,5 +1,6 @@
 package com.karthik.JavaURL.url;
 
+import com.karthik.JavaURL.analytics.ClickDetailResponse;
 import com.karthik.JavaURL.url.dto.CreateShortUrlRequest;
 import com.karthik.JavaURL.url.dto.ShortUrlResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,6 +55,14 @@ public class ApiController {
     @GetMapping("/{code:[A-Za-z0-9_-]{1,64}}")
     public ShortUrlResponse stats(@PathVariable String code) {
         return service.stats(code);
+    }
+
+    /** Returns the most recent click details for one short URL (analytics view). */
+    @GetMapping("/{code:[A-Za-z0-9_-]{1,64}}/clicks")
+    public java.util.List<ClickDetailResponse> recentClicks(
+            @PathVariable String code,
+            @RequestParam(defaultValue = "50") int limit) {
+        return service.recentClicks(code, limit);
     }
 
     /** Deactivates a short URL so that it stops redirecting. Idempotent. */

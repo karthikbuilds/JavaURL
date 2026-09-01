@@ -6,6 +6,7 @@ A dependency-free static web app (HTML + CSS + vanilla JS, no build step) for th
 - Paginated overview of all links with Active / Expired / Deleted status chips
 - Copy-to-clipboard, open-in-new-tab, deactivate buttons
 - **Live click counter** per link over STOMP WebSocket, with automatic polling fallback
+- **QR code** generation and PNG download for each short link
 - Client-side validation mirroring the backend rules; friendly error messages from the API envelope
 
 ## Run it
@@ -20,7 +21,7 @@ python3 -m http.server 3001        # 3000 is often taken by other dev servers
 npx serve -l 3001 .
 ```
 
-Then open **http://localhost:3000**.
+Then open **http://localhost:3001**.
 
 ## How the API location is chosen
 

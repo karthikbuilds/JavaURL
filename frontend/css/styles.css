@@ -117,4 +117,8 @@ td .dest { color: var(--muted); word-break: break-all; max-width: 280px; display
 .meta dd { margin: 0; word-break: break-all; }
 .live-note { margin-top: 14px; font-size: 12px; }
 
+.qr-box { margin-top: 14px; text-align: center; }
+.qr-box img { width: 150px; height: 150px; image-rendering: pixelated; background: #fff; padding: 8px; border-radius: 8px; }
+.qr-actions { margin-top: 8px; display: flex; gap: 8px; justify-content: center; }
+
 .footer { text-align: center; padding: 18px; font-size: 12px; }

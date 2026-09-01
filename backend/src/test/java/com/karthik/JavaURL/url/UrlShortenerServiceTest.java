@@ -1,13 +1,13 @@
 package com.karthik.JavaURL.url;
 
 import com.karthik.JavaURL.analytics.ClickAnalyticsPublisher;
+import com.karthik.JavaURL.analytics.ClickRecordRepository;
 import com.karthik.JavaURL.config.AppProperties;
 import com.karthik.JavaURL.url.dto.CreateShortUrlRequest;
 import com.karthik.JavaURL.url.dto.ShortUrlResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -18,6 +18,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -27,7 +28,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class UrlShortenerServiceTest {
 
-    private static final AppProperties PROPERTIES = new AppProperties("http://localhost:8080/", 7, 302, null);
+    private static final AppProperties PROPERTIES =
+            new AppProperties("http://localhost:8080/", 7, 302, null, null);
 
     @Mock
     private ShortUrlRepository repository;
@@ -35,11 +37,14 @@ class UrlShortenerServiceTest {
     @Mock
     private ClickAnalyticsPublisher analyticsPublisher;
 
+    @Mock
+    private ClickRecordRepository clickRecordRepository;
+
     private UrlShortenerService service;
 
     @BeforeEach
     void setUp() {
-        service = new UrlShortenerService(repository, PROPERTIES, analyticsPublisher);
+        service = new UrlShortenerService(repository, PROPERTIES, analyticsPublisher, clickRecordRepository);
     }
 
     @Test
@@ -51,7 +56,7 @@ class UrlShortenerServiceTest {
 
         assertThat(response.shortCode()).isEqualTo("my-link");
         assertThat(response.shortUrl()).isEqualTo("http://localhost:8080/my-link");
-        verify(analyticsPublisher, never()).publish(any());
+        verify(analyticsPublisher, never()).publish(anyString(), anyLong());
     }
 
     @Test
@@ -104,14 +109,13 @@ class UrlShortenerServiceTest {
     void resolveIncrementsClickCountAndPublishesAnalytics() {
         ShortUrl entity = new ShortUrl("abc1234", "https://example.com", null);
         when(repository.findByShortCode("abc1234")).thenReturn(Optional.of(entity));
-        when(repository.save(any(ShortUrl.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repository.incrementClickCount("abc1234")).thenReturn(1);
 
         ShortUrlResponse response = service.resolveAndCount("abc1234");
 
         assertThat(response.clickCount()).isEqualTo(1);
-        ArgumentCaptor<ShortUrl> captor = ArgumentCaptor.forClass(ShortUrl.class);
-        verify(analyticsPublisher).publish(captor.capture());
-        assertThat(captor.getValue().getClickCount()).isEqualTo(1);
+        verify(repository).incrementClickCount("abc1234");
+        verify(analyticsPublisher).publish("abc1234", 1L);
     }
 
     @Test
@@ -132,7 +136,7 @@ class UrlShortenerServiceTest {
                 .isInstanceOf(UrlNotAvailableException.class);
 
         assertThat(entity.isActive()).isFalse();
-        verify(analyticsPublisher, never()).publish(any());
+        verify(analyticsPublisher, never()).publish(anyString(), anyLong());
     }
 
     @Test
