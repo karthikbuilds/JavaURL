@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaURL · URL Shortener</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='24' font-size='24'%3E%F0%9F%94%97%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand"><span class="logo">🔗</span> Java<span>URL</span></div>
+    <div class="conn" id="ws-status" title="Live analytics connection">● offline</div>
+</header>
+
+<main class="layout">
+    <!-- Create -->
+    <section class="card">
+        <h2>Shorten a link</h2>
+        <form id="shorten-form" novalidate autocomplete="off">
+            <label class="field">
+                <span>Destination URL *</span>
+                <input type="text" name="longUrl" id="longUrl" placeholder="https://example.com/very/long/path" required maxlength="2048">
+            </label>
+            <div class="row">
+                <label class="field grow">
+                    <span>Custom alias <em>(optional)</em></span>
+                    <input type="text" name="customAlias" placeholder="my-link" maxlength="64">
+                </label>
+                <label class="field">
+                    <span>Expires</span>
+                    <select name="expiresInDays">
+                        <option value="">Never</option>
+                        <option value="1">In 1 day</option>
+                        <option value="7">In 7 days</option>
+                        <option value="30">In 30 days</option>
+                        <option value="365">In 1 year</option>
+                    </select>
+                </label>
+            </div>
+            <button type="submit" class="primary" id="submit-btn">Shorten →</button>
+        </form>
+
+        <div id="result" class="result" hidden>
+            <div class="result-label">Your short link</div>
+            <div class="result-row">
+                <a id="result-url" href="#" target="_blank" rel="noopener"></a>
+                <button id="copy-btn" class="ghost small">Copy</button>
+                <button id="test-btn" class="ghost small">Open ↗</button>
+            </div>
+        </div>
+        <div id="form-error" class="alert error" hidden></div>
+    </section>
+
+    <!-- List -->
+    <section class="card wide">
+        <div class="card-head">
+            <h2>Your links</h2>
+            <button id="refresh-btn" class="ghost small">⟳ Refresh</button>
+        </div>
+        <div class="table-wrap">
+            <table id="links-table">
+                <thead>
+                <tr>
+                    <th>Short link</th><th>Destination</th><th>Created</th>
+                    <th>Expires</th><th>Clicks</th><th>Status</th><th></th>
+                </tr>
+                </thead>
+                <tbody id="links-body"><tr><td colspan="7" class="muted">Loading…</td></tr></tbody>
+            </table>
+        </div>
+        <div class="pagination">
+            <button id="prev-page" class="ghost small">← Prev</button>
+            <span id="page-info" class="muted"></span>
+            <button id="next-page" class="ghost small">Next →</button>
+        </div>
+        <div id="list-error" class="alert error" hidden></div>
+    </section>
+
+    <!-- Live stats -->
+    <aside class="card" id="stats-panel" hidden>
+        <div class="card-head">
+            <h2>Live stats</h2>
+            <button id="close-stats" class="ghost small">✕</button>
+        </div>
+        <p class="mono big" id="stats-code"></p>
+        <div class="clicker">
+            <div class="count" id="stats-clicks">0</div>
+            <div class="muted">total clicks</div>
+        </div>
+        <dl class="meta">
+            <dt>Destination</dt><dd id="stats-longurl"></dd>
+            <dt>Created</dt><dd id="stats-created"></dd>
+            <dt>Expires</dt><dd id="stats-expires"></dd>
+            <dt>Status</dt><dd id="stats-active"></dd>
+        </dl>
+        <div class="live-note muted" id="live-note">connecting…</div>
+    </aside>
+</main>
+
+<footer class="footer muted">
+    REST API: <span class="mono" id="api-base-hint"></span> · WebSocket topic: <span class="mono">/topic/clicks/{code}</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.1.1/bundles/stomp.umd.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ws.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

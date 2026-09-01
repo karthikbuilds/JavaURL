@@ -1,0 +1,54 @@
+# Full stack: PostgreSQL + Spring Boot API + web UI.
+#   Start:  docker compose up -d --build
+#   Stop:   docker compose down        (add -v to also wipe database data)
+#
+# UI:      http://localhost:3001   (3001 chosen to avoid the common :3000 dev-server clash)
+# API:     http://localhost:8080
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: javaurl-postgres
+    environment:
+      POSTGRES_DB: javaurl
+      POSTGRES_USER: javaurl
+      POSTGRES_PASSWORD: javaurl
+    ports:
+      - "5432:5432"
+    volumes:
+      - javaurl-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U javaurl -d javaurl"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: javaurl-backend
+    environment:
+      # Inside the compose network the DB hostname is "postgres", not localhost.
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/javaurl
+      POSTGRES_USER: javaurl
+      POSTGRES_PASSWORD: javaurl
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "-", "http://localhost:8080/"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+  frontend:
+    build: ./frontend
+    container_name: javaurl-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+
+volumes:
+  javaurl-pgdata:
