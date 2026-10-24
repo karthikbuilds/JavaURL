@@ -39,39 +39,38 @@ Open **http://localhost:3001**. The UI auto-detects the API at `http://localhost
 
 The backend is a Spring Boot API + database; the frontend is plain static files. The simplest deploy path is:
 
-- **Backend (Java, no Docker)** → **Railway**
+- **Backend (Java/Docker)** → **Render**
 - **Frontend (static)** → **Vercel / Netlify / GitHub Pages**
 
-> In-memory **H2** (the `dev` profile we use locally) works on Railway with **no database** — set `SPRING_PROFILES_ACTIVE=dev`. For persistence, use PostgreSQL by setting `POSTGRES_URL`, `POSTGRES_USER`, and `POSTGRES_PASSWORD`.
+> In-memory **H2** (the `dev` profile we use locally) works on Render with **no database** — set `SPRING_PROFILES_ACTIVE=dev`. For persistence, use PostgreSQL by setting `POSTGRES_URL`, `POSTGRES_USER`, and `POSTGRES_PASSWORD`.
 
-### Fastest: Railway backend + Vercel frontend
-1. In **Railway**, create a new project from GitHub and select this repo.
-2. Set the Railway service **Root Directory** to `backend`.
-3. Build command: `./mvnw package -DskipTests`
-4. Start command: `java -jar target/JavaURL-0.0.1-SNAPSHOT.jar`
-5. Add environment variables:
+### Fastest: Render backend + Vercel frontend
+The repository includes a `render.yaml` Blueprint for the backend. In **Render**, choose
+**New → Blueprint**, connect this repository, and apply the generated web service. The
+Dockerfile builds the backend and Render injects its public `PORT` automatically.
+
+For a zero-setup demo, add these environment variables to the Render service:
 
 ```text
 SPRING_PROFILES_ACTIVE=dev
-SERVER_PORT=${PORT}
-APP_BASE_URL=https://YOUR-RAILWAY-DOMAIN.up.railway.app
+APP_BASE_URL=https://YOUR-BACKEND.onrender.com
 ```
 
-6. Generate a public Railway domain, then update `APP_BASE_URL` to that exact URL.
-7. Deploy `frontend/` to **Vercel** (or any static host).
-8. In `frontend/index.html`, uncomment the override block and point it at your Railway backend URL:
+Update `APP_BASE_URL` after Render assigns the service URL, then deploy `frontend/` to
+**Vercel** (or any static host). In `frontend/index.html`, uncomment the override block
+and point it at the Render backend:
 
 ```html
 <script>
   window.JAVAURL_CONFIG_OVERRIDE = {
-    apiBase: 'https://YOUR-RAILWAY-DOMAIN.up.railway.app',
-    wsBase:  'wss://YOUR-RAILWAY-DOMAIN.up.railway.app'
+    apiBase: 'https://YOUR-BACKEND.onrender.com',
+    wsBase:  'wss://YOUR-BACKEND.onrender.com'
   };
 </script>
 ```
 
 ### Wait — you said H2 in-memory?
-Correct: for local running we use `SPRING_PROFILES_ACTIVE=dev` → H2 in-memory (data resets on restart, perfect for a demo). On Railway, setting the same profile gives you a live API with **no database setup**. For real persistence, flip to Postgres (see `.env.example`).
+Correct: for local running we use `SPRING_PROFILES_ACTIVE=dev` → H2 in-memory (data resets on restart, perfect for a demo). On Render, setting the same profile gives you a live API with **no database setup**. For real persistence, provision Render PostgreSQL and set `POSTGRES_URL`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` (see `.env.example`).
 
 ### Full env reference
 See **[`.env.example`](.env.example)** — it lists every variable (ports, DB choice, `APP_BASE_URL`, tuning).

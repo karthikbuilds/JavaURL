@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: javaurl-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: dev
+      - key: APP_BASE_URL
+        sync: false

@@ -56,5 +56,5 @@ Note: opening `index.html` directly via `file://` works in most browsers because
 backend sends permissive CORS headers, but serving over HTTP (as above) is more reliable.
 
 For deployment, host this folder on any static host (Vercel, Netlify, GitHub Pages).
-If the backend lives on another domain (for example Railway), uncomment the
+If the backend lives on another domain (for example Render), uncomment the
 `JAVAURL_CONFIG_OVERRIDE` block in `index.html` and point it at that API URL.

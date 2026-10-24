@@ -25,31 +25,24 @@ counts clicks and broadcasts live analytics.
 
 Environment overrides: `POSTGRES_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `APP_BASE_URL`, `SERVER_PORT`.
 
-## Deploy to Railway (no Docker)
+## Deploy to Render
 
-1. Create a new Railway project from this GitHub repo.
-2. Set the service **Root Directory** to `backend`.
-3. Build command:
+The repository includes a root-level `render.yaml` Blueprint and `Dockerfile`.
+In Render, choose **New → Blueprint**, connect this repository, and apply the
+generated web service. Render supplies `PORT`; the application maps it to
+`server.port` automatically.
 
-```bash
-./mvnw package -DskipTests
-```
-
-4. Start command:
-
-```bash
-java -jar target/JavaURL-0.0.1-SNAPSHOT.jar
-```
-
-5. Add variables:
+For a zero-setup demo, add:
 
 ```text
 SPRING_PROFILES_ACTIVE=dev
-SERVER_PORT=${PORT}
-APP_BASE_URL=https://YOUR-RAILWAY-DOMAIN.up.railway.app
+APP_BASE_URL=https://YOUR-BACKEND.onrender.com
 ```
 
-Use `SPRING_PROFILES_ACTIVE=dev` for a zero-setup H2 demo (data resets when the service restarts). For persistence, remove that variable and provide `POSTGRES_URL`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` instead.
+Replace the placeholder with the Render service URL. Use `SPRING_PROFILES_ACTIVE=dev`
+for a zero-setup H2 demo (data resets when the service restarts). For persistence,
+remove that variable and provide `POSTGRES_URL`, `POSTGRES_USER`, and
+`POSTGRES_PASSWORD` instead.
 
 ## API Reference
 
